@@ -1,0 +1,39 @@
+{%- doc -%}
+  Renders a "SAVE X%" corner badge over the media gallery when the current
+  variant has a compare-at price. Computes the percentage itself since the
+  theme's native product-badges only render a static "Sale" label.
+  Must be placed inside a `position: relative` container.
+
+  @param {product} product
+{%- enddoc -%}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign compare = current_variant.compare_at_price
+  assign price = current_variant.price
+  assign show_badge = false
+  if compare > price
+    assign show_badge = true
+    assign save_percent = compare | minus: price | times: 100.0 | divided_by: compare | round
+  endif
+-%}
+{%- if show_badge -%}
+  <div class="clenzo-sale-badge">SAVE {{ save_percent }}%</div>
+{%- endif -%}
+
+{% stylesheet %}
+  .clenzo-sale-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 2;
+    background: #e0294a;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  }
+{% endstylesheet %}
