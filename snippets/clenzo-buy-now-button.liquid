@@ -2,8 +2,7 @@
   Custom full-width "Buy It Now" button styled to match the reference
   design. Replaces the native accelerated-checkout (Shopify dynamic
   checkout) button, which cannot be recolored — this one adds the current
-  variant + quantity + any checked "You Will Love This" add-ons to the cart,
-  then redirects straight to checkout.
+  variant + quantity to the cart, then redirects straight to checkout.
 
   This snippet also hides the native `.accelerated-checkout-block` inside
   `.product-details` via CSS so both buttons don't show at once.
@@ -27,15 +26,6 @@
         return qty > 0 ? qty : 1;
       }
 
-      function getSelectedAddonItems() {
-        var items = [];
-        document.querySelectorAll('.clenzo-addon-item__checkbox:checked').forEach(function (cb) {
-          var id = parseInt(cb.dataset.variantId, 10);
-          if (id) items.push({ id: id, quantity: 1 });
-        });
-        return items;
-      }
-
       function init() {
         document.querySelectorAll('[data-clenzo-buy-now]').forEach(function (btn) {
           if (btn.dataset.clenzoInit) return;
@@ -49,7 +39,7 @@
             var variantId = variantInput ? parseInt(variantInput.value, 10) : parseInt(btn.dataset.variantId, 10);
             var quantity = getQuantity(details);
 
-            var items = [{ id: variantId, quantity: quantity }].concat(getSelectedAddonItems());
+            var items = [{ id: variantId, quantity: quantity }];
 
             btn.disabled = true;
             var originalText = btn.textContent;
