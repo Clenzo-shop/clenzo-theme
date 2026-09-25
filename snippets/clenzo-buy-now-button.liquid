@@ -1,0 +1,115 @@
+{%- doc -%}
+  Custom full-width "Buy It Now" button styled to match the reference
+  design. Replaces the native accelerated-checkout (Shopify dynamic
+  checkout) button, which cannot be recolored — this one adds the current
+  variant + quantity + any checked "You Will Love This" add-ons to the cart,
+  then redirects straight to checkout.
+
+  This snippet also hides the native `.accelerated-checkout-block` inside
+  `.product-details` via CSS so both buttons don't show at once.
+
+  @param {product} product
+{%- enddoc -%}
+
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+-%}
+{%- if variant.available -%}
+  <button type="button" class="clenzo-buy-now-button" data-clenzo-buy-now data-variant-id="{{ variant.id }}">
+    Buy It Now
+  </button>
+
+  <script>
+    (function () {
+      function getQuantity(details) {
+        var input = details.querySelector('quantity-selector-component input[type="number"]');
+        var qty = input ? parseInt(input.value, 10) : 1;
+        return qty > 0 ? qty : 1;
+      }
+
+      function getSelectedAddonItems() {
+        var items = [];
+        document.querySelectorAll('.clenzo-addon-item__checkbox:checked').forEach(function (cb) {
+          var id = parseInt(cb.dataset.variantId, 10);
+          if (id) items.push({ id: id, quantity: 1 });
+        });
+        return items;
+      }
+
+      function init() {
+        document.querySelectorAll('[data-clenzo-buy-now]').forEach(function (btn) {
+          if (btn.dataset.clenzoInit) return;
+          btn.dataset.clenzoInit = 'true';
+
+          btn.addEventListener('click', function () {
+            var details = document.querySelector('.product-details');
+            if (!details) return;
+
+            var variantInput = details.querySelector('input[name="id"]');
+            var variantId = variantInput ? parseInt(variantInput.value, 10) : parseInt(btn.dataset.variantId, 10);
+            var quantity = getQuantity(details);
+
+            var items = [{ id: variantId, quantity: quantity }].concat(getSelectedAddonItems());
+
+            btn.disabled = true;
+            var originalText = btn.textContent;
+            btn.textContent = 'Adding...';
+
+            fetch('/cart/add.js', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify({ items: items }),
+            })
+              .then(function (response) {
+                if (!response.ok) throw new Error('add failed');
+                window.location.href = '/checkout';
+              })
+              .catch(function () {
+                btn.disabled = false;
+                btn.textContent = originalText;
+              });
+          });
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+      document.addEventListener('shopify:section:load', init);
+    })();
+  </script>
+{%- endif -%}
+
+{% stylesheet %}
+  .product-details .accelerated-checkout-block {
+    display: none !important;
+  }
+
+  .clenzo-buy-now-button {
+    display: block;
+    width: 100%;
+    margin-top: 0.6rem;
+    padding: 0.95rem 1rem;
+    border: none;
+    border-radius: var(--style-border-radius-buttons-primary, 10px);
+    background: #0b2e6b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .clenzo-buy-now-button:hover {
+    background: #08234f;
+  }
+
+  .clenzo-buy-now-button:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+{% endstylesheet %}

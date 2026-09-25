@@ -1,0 +1,402 @@
+{%- doc -%}
+  Reusable "below the fold" product content: feature badges, key benefits
+  checklist, suitable-for tags, how-to-use steps and an important-note
+  callout. Reads structured metafields under the `custom` namespace so any
+  product can carry its own content without editing this section.
+
+  Metafield definitions to create in Settings > Custom data > Products:
+    custom.description_heading   (single line text)  "Clenzo Grease Blast|Lemon Orange|500ml"
+                                                       (segment between the first two "|" is shown in green)
+    custom.description_intro     (single line text)  intro sentence under the heading
+    custom.feature_badges        (list, single line)  "icon|Label" per line, icon one of:
+                                                       fire, lightning_bolt, leaf (else a checkmark is shown)
+    custom.key_benefits          (list, single line)  one benefit per line
+    custom.suitable_for          (list, single line)  one surface/tag per line
+    custom.how_to_use_steps      (list, single line)  one step per line
+    custom.important_note        (multi line text)   warning/callout text
+
+  @param {product} product
+{%- enddoc -%}
+
+{%- liquid
+  assign heading_raw = product.metafields.custom.description_heading.value
+  assign intro = product.metafields.custom.description_intro.value
+  assign feature_badges = product.metafields.custom.feature_badges.value
+  assign key_benefits = product.metafields.custom.key_benefits.value
+  assign suitable_for = product.metafields.custom.suitable_for.value
+  assign how_to_use_steps = product.metafields.custom.how_to_use_steps.value
+  assign important_note = product.metafields.custom.important_note.value
+
+  assign has_content = false
+  if heading_raw != blank
+    or intro != blank
+    or feature_badges.size > 0
+    or key_benefits.size > 0
+    or suitable_for.size > 0
+    or how_to_use_steps.size > 0
+    or important_note != blank
+    assign has_content = true
+  endif
+-%}
+{%- if has_content -%}
+  <div class="clenzo-details page-width">
+    {%- if heading_raw != blank -%}
+      {%- assign heading_parts = heading_raw | split: '|' -%}
+      <h2 class="clenzo-details__heading">
+        {%- for part in heading_parts -%}
+          {%- if forloop.index0 == 1 -%}
+            <span class="clenzo-details__heading-accent">{{ part }}</span>
+          {%- else -%}
+            {{ part }}
+          {%- endif -%}
+          {%- unless forloop.last %} {% endunless -%}
+        {%- endfor -%}
+      </h2>
+    {%- endif -%}
+
+    {%- if intro != blank -%}
+      <p class="clenzo-details__intro">{{ intro }}</p>
+    {%- endif -%}
+
+    {%- if feature_badges.size > 0 -%}
+      <div class="clenzo-details__badges">
+        {%- for badge in feature_badges -%}
+          {%- assign badge_parts = badge | split: '|' -%}
+          {%- assign badge_icon = badge_parts[0] -%}
+          {%- assign badge_label = badge_parts[1] | default: badge_parts[0] -%}
+          <div class="clenzo-details__badge">
+            <span class="clenzo-details__badge-icon">
+              {%- case badge_icon -%}
+                {%- when 'fire' or 'flame' -%}
+                  {%- render 'icon-or-image', icon: 'fire', width: 22 -%}
+                {%- when 'lightning_bolt' or 'sparkle' or 'shine' -%}
+                  {%- render 'icon-or-image', icon: 'lightning_bolt', width: 22 -%}
+                {%- when 'leaf' or 'citrus' or 'fresh' -%}
+                  {%- render 'icon-or-image', icon: 'leaf', width: 22 -%}
+                {%- else -%}
+                  {{- 'icon-checkmark.svg' | inline_asset_content -}}
+              {%- endcase -%}
+            </span>
+            <span class="clenzo-details__badge-label">{{ badge_label }}</span>
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if key_benefits.size > 0 -%}
+      <div class="clenzo-details__section">
+        <h3 class="clenzo-details__section-title">
+          <span class="clenzo-details__section-icon clenzo-details__section-icon--green">
+            {{- 'icon-checkmark.svg' | inline_asset_content -}}
+          </span>
+          Key Benefits
+        </h3>
+        <div class="clenzo-details__benefits">
+          {%- for benefit in key_benefits -%}
+            <div class="clenzo-details__benefit">
+              <span class="clenzo-details__benefit-icon">
+                {{- 'icon-checkmark.svg' | inline_asset_content -}}
+              </span>
+              <span>{{ benefit }}</span>
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if suitable_for.size > 0 -%}
+      <div class="clenzo-details__section">
+        <h3 class="clenzo-details__section-title">
+          <span class="clenzo-details__section-icon clenzo-details__section-icon--navy">
+            {%- render 'icon-or-image', icon: 'map_pin', width: 18 -%}
+          </span>
+          Suitable For
+        </h3>
+        <div class="clenzo-details__pills">
+          {%- for tag in suitable_for -%}
+            <span class="clenzo-details__pill">{{ tag }}</span>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if how_to_use_steps.size > 0 -%}
+      <div class="clenzo-details__section">
+        <h3 class="clenzo-details__section-title">
+          <span class="clenzo-details__section-icon clenzo-details__section-icon--amber">
+            {%- render 'icon-or-image', icon: 'bottle', width: 18 -%}
+          </span>
+          How to Use
+        </h3>
+        <div class="clenzo-details__steps">
+          {%- for step in how_to_use_steps -%}
+            <div class="clenzo-details__step">
+              <span class="clenzo-details__step-number">{{ forloop.index }}</span>
+              <span class="clenzo-details__step-text">{{ step }}</span>
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if important_note != blank -%}
+      <div class="clenzo-details__warning">
+        <span class="clenzo-details__warning-icon">
+          {{- 'icon-warning.svg' | inline_asset_content -}}
+        </span>
+        <div>
+          <p class="clenzo-details__warning-title">Important</p>
+          <p class="clenzo-details__warning-text">{{ important_note }}</p>
+        </div>
+      </div>
+    {%- endif -%}
+
+    <p class="clenzo-details__tagline">Clenzo — <span>Making Everyday Cleaning Simple.</span></p>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .clenzo-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    padding-block: 2.5rem;
+    max-width: 760px;
+    margin-inline: 0;
+  }
+
+  .clenzo-details__heading {
+    margin: 0;
+    font-size: 1.75rem;
+    line-height: 1.25;
+    font-weight: 800;
+    color: #10306b;
+  }
+
+  .clenzo-details__heading-accent {
+    color: #1f8a4c;
+  }
+
+  .clenzo-details__intro {
+    margin: -1rem 0 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgb(var(--color-foreground-rgb) / 0.85);
+  }
+
+  .clenzo-details__badges {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .clenzo-details__badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    padding: 1rem 0.5rem;
+    border-radius: 12px;
+    background: rgb(31 138 76 / 0.08);
+  }
+
+  .clenzo-details__badge-icon {
+    color: #1f8a4c;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+  }
+
+  .clenzo-details__badge-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .clenzo-details__badge-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgb(var(--color-foreground-rgb) / 0.85);
+  }
+
+  .clenzo-details__section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .clenzo-details__section-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #10306b;
+  }
+
+  .clenzo-details__section-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .clenzo-details__section-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .clenzo-details__section-icon--green {
+    background: #1f8a4c;
+    color: #fff;
+  }
+
+  .clenzo-details__section-icon--navy {
+    background: #10306b;
+    color: #fff;
+  }
+
+  .clenzo-details__section-icon--amber {
+    background: #d97706;
+    color: #fff;
+  }
+
+  .clenzo-details__benefits {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .clenzo-details__benefit {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 10px;
+    background: rgb(31 138 76 / 0.08);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .clenzo-details__benefit-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    color: #1f8a4c;
+  }
+
+  .clenzo-details__benefit-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .clenzo-details__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .clenzo-details__pill {
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    background: rgb(16 48 107 / 0.08);
+    color: #10306b;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .clenzo-details__steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .clenzo-details__step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.12);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .clenzo-details__step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #10306b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .clenzo-details__step-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgb(var(--color-foreground-rgb) / 0.85);
+  }
+
+  .clenzo-details__warning {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 1rem 1.1rem;
+    border-radius: 12px;
+    background: #fdf3d8;
+  }
+
+  .clenzo-details__warning-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    color: #b45309;
+  }
+
+  .clenzo-details__warning-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .clenzo-details__warning-title {
+    margin: 0 0 0.2rem;
+    font-weight: 800;
+    color: #92400e;
+  }
+
+  .clenzo-details__warning-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #7c3c0d;
+  }
+
+  .clenzo-details__tagline {
+    margin: 0;
+    font-weight: 700;
+    color: #10306b;
+  }
+
+  .clenzo-details__tagline span {
+    color: #1f8a4c;
+  }
+
+  @media screen and (max-width: 749px) {
+    .clenzo-details__badges {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .clenzo-details__benefits {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .clenzo-details__steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+{% endstylesheet %}

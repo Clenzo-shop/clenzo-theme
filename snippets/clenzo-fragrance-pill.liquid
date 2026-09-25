@@ -1,0 +1,59 @@
+{%- doc -%}
+  Renders the fragrance/variant highlight pill under the product title
+  (e.g. "Lemon-Orange Fresh fragrance"), sourced from
+  product.metafields.custom.fragrance_pill. Renders nothing if blank.
+
+  @param {product} product
+{%- enddoc -%}
+
+{%- liquid
+  assign fragrance_label = product.metafields.custom.fragrance_pill.value
+-%}
+{%- if fragrance_label != blank -%}
+  <div class="clenzo-fragrance-pill">
+    <span class="clenzo-fragrance-pill__dots" aria-hidden="true">
+      <span class="clenzo-fragrance-pill__dot clenzo-fragrance-pill__dot--yellow"></span>
+      <span class="clenzo-fragrance-pill__dot clenzo-fragrance-pill__dot--orange"></span>
+    </span>
+    <span class="clenzo-fragrance-pill__label">{{ fragrance_label }}</span>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .clenzo-fragrance-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--style-border-radius-pills, 999px);
+    background: linear-gradient(90deg, rgba(250, 204, 21, 0.18), rgba(249, 115, 22, 0.18));
+  }
+
+  .clenzo-fragrance-pill__dots {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .clenzo-fragrance-pill__dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .clenzo-fragrance-pill__dot--yellow {
+    background: #facc15;
+  }
+
+  .clenzo-fragrance-pill__dot--orange {
+    background: #f97316;
+    margin-left: -6px;
+  }
+
+  .clenzo-fragrance-pill__label {
+    font-style: italic;
+    font-weight: 600;
+    color: #c2410c;
+    font-size: 0.95rem;
+  }
+{% endstylesheet %}

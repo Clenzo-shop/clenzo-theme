@@ -5,11 +5,14 @@
 </script>
 
 {% capture media_gallery %}
-  {%- content_for 'block',
-    type: '_product-media-gallery',
-    id: 'media-gallery',
-    closest.product: closest.product
-  -%}
+  <div class="clenzo-media-gallery-wrap">
+    {%- content_for 'block',
+      type: '_product-media-gallery',
+      id: 'media-gallery',
+      closest.product: closest.product
+    -%}
+    {%- render 'clenzo-sale-badge', product: closest.product -%}
+  </div>
 {% endcapture %}
 
 {% capture product_details %}
@@ -184,6 +187,10 @@
 %}
 
 {% stylesheet %}
+  .clenzo-media-gallery-wrap {
+    position: relative;
+  }
+
   .sticky-add-to-cart__bar {
     position: fixed;
     bottom: max(20px, var(--safe-area-inset-bottom));
